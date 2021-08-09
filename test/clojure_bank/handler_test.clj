@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
             [clojure.pprint :as pp]
+            [clojure.data.json :as json]
             [clojure-bank.handler :refer :all]))
 
 (deftest main-routes
@@ -23,8 +24,9 @@
     (let [response (app (-> (mock/request :post "/account")
                             (mock/json-body {:name "Mr. Black"})))]
       (is (= (:status response) 200))
-      (is (= (:body response) "{\"name\":\"Mr. Black\",\"balance\":\"0\"}")))
+      (is (= (:body response) (json/write-str {:name "Mr. Black" :balance "0"})))))
 
+  (testing "review account"
     (let [response (app (mock/request :get "/account/1"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "[{\"name\":\"Mr. Black\",\"balance\":\"0\"}]")))))
+      (is (= (:body response) (json/write-str [{:name "Mr. Black" :balance "0"}]))))))

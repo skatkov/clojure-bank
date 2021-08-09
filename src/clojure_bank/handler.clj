@@ -13,7 +13,8 @@
   (+ 1 (or (:account-number (peek @account-collection)) 0)))
 
 (defn add-account [name]
-  (swap! account-collection conj {:account-number (next-account-number) :name name :balance 0}))
+  (swap! account-collection conj
+  		{:account-number (next-account-number) :name name :balance 0}))
 
 (defn get-account [id]
   {:status 200
@@ -31,7 +32,9 @@
   (GET "/" [] "Hello World")
   (context "/account" [] (defroutes account-routes
   		(POST "/" {body :body} (add-account-handler body))
-  		(GET "/:id" [id] (get-account id))))
+  		(GET "/:id" [id] (get-account id))
+  		(POST "/:id/deposit" [id body] (add-deposit id body) )
+  		))
   (route/not-found "Not Found"))
 
 (def app

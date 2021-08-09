@@ -20,8 +20,11 @@
       (is (= (:body response) "[]"))))
 
   (testing "adding an account"
-    (app (mock/request :get "/account?name=test1"))
+    (let [response (app (-> (mock/request :post "/account")
+                            (mock/json-body {:name "Mr. Black"})))]
+      (is (= (:status response) 200))
+      (is (= (:body response) "{\"name\":\"Mr. Black\",\"balance\":\"0\"}")))
 
     (let [response (app (mock/request :get "/account/1"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "[{\"name\":\"test1\"}]")))))
+      (is (= (:body response) "[{\"name\":\"Mr. Black\",\"balance\":\"0\"}]")))))

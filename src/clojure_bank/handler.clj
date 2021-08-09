@@ -29,8 +29,9 @@
 
 (defroutes app-routes
   (GET "/" [] "Hello World")
-  (POST "/account" {body :body} (add-account-handler body))
-  (GET "/account/:id" [id] (get-account id))
+  (context "/account" [] (defroutes account-routes
+  		(POST "/" {body :body} (add-account-handler body))
+  		(GET "/:id" [id] (get-account id))))
   (route/not-found "Not Found"))
 
 (def app

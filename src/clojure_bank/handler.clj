@@ -1,7 +1,9 @@
 (ns clojure-bank.handler
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
+            [compojure.handler :as handler]
             [clojure.data.json :as json]
+            [ring.middleware.json :as middleware]
             [clojure.pprint :as pp]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
 
@@ -17,6 +19,12 @@
 
 (defn getparameter [req pname] (get (:params req) pname))
 
+(defn add-account-body-handler [body]
+		(pp/pprint (type body))
+  (pp/pprint body)
+  (pp/pprint (body "name"))
+  (str (json/write-str body)))
+
 (defn add-account-handler [req]
   {:status 200
    :headers {"Content-Type" "text/json"}
@@ -27,8 +35,11 @@
 (defroutes app-routes
   (GET "/" [] "Hello World")
   (GET "/account" [] add-account-handler)
+  (POST "/account" {body :body} (add-account-body-handler body))
   (GET "/account/:id" [id] (get-account id))
   (route/not-found "Not Found"))
 
 (def app
-  (wrap-defaults app-routes site-defaults))
+  (-> (handler/api app-routes)
+      (middleware/wrap-json-body)
+      (middleware/wrap-json-response)))

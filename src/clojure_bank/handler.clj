@@ -23,18 +23,24 @@
    :headers {"Content-Type" "text/json"}
    :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))})
 
-(defn getparameter [req pname] (get (:params req) pname))
-
 (defn add-account-handler [body]
   {:status 200
    :headers {"Content-Type" "text/json"}
    :body (str (json/write-str (last (vals (add-account (body "name"))))))})
 
+(defn add-deposit-handler [id body]
+  (pp/pprint (get-account id))
+  (pp/pprint body)
+
+  (get-account-handler id))
+
 (defroutes app-routes
   (GET "/" [] "Hello World")
   (context "/account" [] (defroutes account-routes
                            (POST "/" {body :body} (add-account-handler body))
-                           (GET "/:id" [id] (get-account-handler id))))
+                           (context "/:id" [id] (defroutes account-routes
+                                                  (GET "/" [] (get-account-handler id))
+                                                  (POST "/deposit" {body :body} (add-deposit-handler id body))))))
   (route/not-found "Not Found"))
 
 (def app

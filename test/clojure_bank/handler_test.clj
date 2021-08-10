@@ -18,7 +18,7 @@
   (testing "no accounts"
     (let [response (app (mock/request :get "/account/666"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "null"))))
+      (is (= (:body response) (json/write-str {:error "Account is missing"})))))
 
   (testing "adding an account"
     (let [response (app (-> (mock/request :post "/account")

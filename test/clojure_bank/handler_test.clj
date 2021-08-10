@@ -16,9 +16,9 @@
       (is (= (:status response) 404)))))
 (deftest app-accounts
   (testing "no accounts"
-    (let [response (app (mock/request :get "/account/1"))]
+    (let [response (app (mock/request :get "/account/666"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "[]"))))
+      (is (= (:body response) "null"))))
 
   (testing "adding an account"
     (let [response (app (-> (mock/request :post "/account")
@@ -38,5 +38,8 @@
     (let [response (app (mock/request :get "/account/1"))]
       (is (= (:status response) 200))
       (is (= (:body response)
-             (json/write-str [{:account-number 1 :name "Mr. Black" :balance 0}
-                              {:account-number 2 :name "Mr. Brown" :balance 0}]))))))
+             (json/write-str {:account-number 1 :name "Mr. Black" :balance 0}))))
+    (let [response (app (mock/request :get "/account/2"))]
+      (is (= (:status response) 200))
+      (is (= (:body response)
+             (json/write-str {:account-number 2 :name "Mr. Brown" :balance 0}))))))

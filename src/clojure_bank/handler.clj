@@ -7,26 +7,25 @@
             [clojure.pprint :as pp]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]))
 
-(def account-collection (atom []))
+(def account-collection (atom {}))
 
 (defn next-account-number []
-  (+ 1 (or (:account-number (peek @account-collection)) 0)))
+  (+ 1 (if (empty? @account-collection) 0 (key (last @account-collection)))))
 
 (defn add-account [name]
-  (swap! account-collection conj
-  		{:account-number (next-account-number) :name name :balance 0}))
+  (swap! account-collection assoc (next-account-number) {:account-number (next-account-number) :name name :balance 0}))
 
 (defn get-account [id]
   {:status 200
    :headers {"Content-Type" "text/json"}
-   :body  (str (json/write-str @account-collection))})
+   :body  (str (json/write-str (get @account-collection (Integer/parseInt id))))})
 
 (defn getparameter [req pname] (get (:params req) pname))
 
 (defn add-account-handler [body]
   {:status 200
    :headers {"Content-Type" "text/json"}
-   :body (str (json/write-str (peek (add-account (body "name")))))})
+   :body (str (json/write-str (last (vals (add-account (body "name"))))))})
 
 (defroutes app-routes
   (GET "/" [] "Hello World")

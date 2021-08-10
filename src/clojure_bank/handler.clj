@@ -15,8 +15,10 @@
 (defn add-account [name]
   (swap! account-collection assoc (next-account-number) {:account-number (next-account-number) :name name :balance 0}))
 
-(defn get-account [id]
-		(def account (get @account-collection (Integer/parseInt id)))
+(defn get-account [id] (get @account-collection (Integer/parseInt id)))
+
+(defn get-account-handler [id]
+  (def account (get-account id))
   {:status 200
    :headers {"Content-Type" "text/json"}
    :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))})
@@ -24,16 +26,15 @@
 (defn getparameter [req pname] (get (:params req) pname))
 
 (defn add-account-handler [body]
-		{:status 200
+  {:status 200
    :headers {"Content-Type" "text/json"}
    :body (str (json/write-str (last (vals (add-account (body "name"))))))})
 
 (defroutes app-routes
   (GET "/" [] "Hello World")
   (context "/account" [] (defroutes account-routes
-  		(POST "/" {body :body} (add-account-handler body))
-  		(GET "/:id" [id] (get-account id))
-  		))
+                           (POST "/" {body :body} (add-account-handler body))
+                           (GET "/:id" [id] (get-account-handler id))))
   (route/not-found "Not Found"))
 
 (def app

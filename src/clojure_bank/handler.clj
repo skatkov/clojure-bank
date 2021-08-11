@@ -43,9 +43,12 @@
   (response (last (vals (add-account (body "name"))))))
 
 (defn add-deposit-handler [id body]
-  (if (> 0 (body "amount"))
-    (negative-amount-error)
-    (if (nil? (@account-collection (Integer/parseInt id))) (missing-account-error) (add-deposit-resp id body))))
+		(cond
+				(> 0 (body "amount")) (negative-amount-error)
+				(nil? (@account-collection (Integer/parseInt id))) (missing-account-error)
+				:else (add-deposit-resp id body)
+		)
+)
 
 (defroutes app-routes
   (GET "/" [] "Hello World")

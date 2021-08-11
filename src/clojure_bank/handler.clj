@@ -1,4 +1,5 @@
 (ns clojure-bank.handler
+  (:use ring.util.response)
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [compojure.handler :as handler]
@@ -21,32 +22,30 @@
     (swap! account-collection assoc-in [id :balance] new-balance)))
 
 (defn missing-account-error []
-			{:status 200
-     :headers {"Content-Type" "text/json"}
-     :body  (str (json/write-str {:error "Account is missing"} ))
-    }
-)
+  {:status 400
+   :headers {"Content-Type" "text/json"}
+   :body  (str (json/write-str {:error "Account is missing"}))})
 
-(defn response [body]
-		{:status 200
-     :headers {"Content-Type" "text/json"}
-     :body  (str (json/write-str body))}
-)
+(defn negative-amount-error []
+  {:status 400
+   :headers {"Content-Type" "text/json"}
+   :body  (str (json/write-str {:error "You can only deposit a positive amount of money."}))})
 
 (defn get-account-handler [id]
-		(let [account (@account-collection (Integer/parseInt id))]
-				(if (nil? account) (missing-account-error) (response account))
-  )
- )
+  (let [account (@account-collection (Integer/parseInt id))]
+    (if (nil? account) (missing-account-error) (response account))))
 
-(defn add-account-handler [body]
-  {:status 200
-   :headers {"Content-Type" "text/json"}
-   :body (str (json/write-str (last (vals (add-account (body "name"))))))})
-
-(defn add-deposit-handler [id body]
+(defn add-deposit-resp [id body]
   (add-deposit (Integer/parseInt id) (body "amount"))
   (get-account-handler id))
+
+(defn add-account-handler [body]
+  (response (last (vals (add-account (body "name"))))))
+
+(defn add-deposit-handler [id body]
+  (if (> 0 (body "amount"))
+    (negative-amount-error)
+    (if (nil? (@account-collection (Integer/parseInt id))) (missing-account-error) (add-deposit-resp id body))))
 
 (defroutes app-routes
   (GET "/" [] "Hello World")

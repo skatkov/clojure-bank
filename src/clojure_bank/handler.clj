@@ -13,7 +13,9 @@
   (+ 1 (if (empty? @account-collection) 0 (key (last @account-collection)))))
 
 (defn add-account [name]
-  (swap! account-collection assoc (next-account-number) {:account-number (next-account-number) :name name :balance 0}))
+		(let [new-id (next-account-number)]
+				(swap! account-collection assoc new-id {:account-number new-id :name name :balance 0}))
+		)
 
 (defn get-account-handler [id]
   (let [account (get @account-collection (Integer/parseInt id))]

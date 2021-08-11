@@ -20,11 +20,24 @@
   (let [new-balance (+ amount (:balance (@account-collection id)))]
     (swap! account-collection assoc-in [id :balance] new-balance)))
 
-(defn get-account-handler [id]
-  (let [account (@account-collection (Integer/parseInt id))]
-    {:status 200
+(defn missing-account-error []
+			{:status 200
      :headers {"Content-Type" "text/json"}
-     :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))}))
+     :body  (str (json/write-str {:error "Account is missing"} ))
+    }
+)
+
+(defn response [body]
+		{:status 200
+     :headers {"Content-Type" "text/json"}
+     :body  (str (json/write-str body))}
+)
+
+(defn get-account-handler [id]
+		(let [account (@account-collection (Integer/parseInt id))]
+				(if (nil? account) (missing-account-error) (response account))
+  )
+ )
 
 (defn add-account-handler [body]
   {:status 200

@@ -43,10 +43,7 @@
       (is (= (:status response) 200))
       (is (= (:body response)
              (json/write-str {:account-number 2 :name "Mr. Brown" :balance 0})))))
-  (testing "adding deposit to account that is missing")
-  (testing "adding negative deposit")
-  (testing "deposit with incorrectly formed body")
-
+  
   (testing "adding deposit to existing account"
     (let [response (app (-> (mock/request :post "/account/1/deposit")
                             (mock/json-body {:amount 100})))]
@@ -58,4 +55,17 @@
                             (mock/json-body {:amount 50})))]
 
       (is (= (:status response) 200))
-      (is (= (:body response) (json/write-str {:account-number 1 :name "Mr. Black" :balance 150}))))))
+      (is (= (:body response) (json/write-str {:account-number 1 :name "Mr. Black" :balance 150})))))
+
+  (testing "adding deposit to account that is missing")
+  (testing "adding negative deposit"
+  			(let [response (app (-> (mock/request :post "/account/1/deposit")
+                            (mock/json-body {:amount -100})))]
+
+      (is (= (:status response) 200))
+      (is (= (:body response) (json/write-str {:error "You can only deposit a positive amount of money."}))))
+  )
+
+  (testing "deposit with incorrectly formed body")
+
+)

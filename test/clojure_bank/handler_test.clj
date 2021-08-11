@@ -70,4 +70,12 @@
       (is (= (:status response) 400))
       (is (= (:body response) (json/write-str {:error "You can only deposit a positive amount of money."})))))
 
-  (testing "deposit with incorrectly formed body"))
+  (testing "withdraw money from account"
+  		(let [response (app (-> (mock/request :post "/account/1/withdraw")
+                            (mock/json-body {:amount 50})))]
+
+  			(is (= (:status response) 200))
+  			(is (= (:body response) (json/write-str {:account-number 1 :name "Mr. Black" :balance 100})))
+  		)
+  )
+)

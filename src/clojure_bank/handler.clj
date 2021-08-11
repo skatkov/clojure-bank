@@ -21,6 +21,11 @@
   (let [new-balance (+ amount (:balance (@account-collection id)))]
     (swap! account-collection assoc-in [id :balance] new-balance)))
 
+(defn withdraw [id amount]
+  (let [new-balance (- (:balance (@account-collection id)) amount)]
+    (swap! account-collection assoc-in [id :balance] new-balance)))
+
+
 (defn missing-account-error []
   {:status 400
    :headers {"Content-Type" "text/json"}
@@ -50,13 +55,20 @@
 		)
 )
 
+(defn add-withdraw-handler [id body]
+		(withdraw (Integer/parseInt id) (body "amount"))
+		(get-account-handler id)
+)
+
 (defroutes app-routes
   (GET "/" [] "Hello World")
   (context "/account" [] (defroutes account-routes
                            (POST "/" {body :body} (add-account-handler body))
                            (context "/:id" [id] (defroutes account-routes
                                                   (GET "/" [] (get-account-handler id))
-                                                  (POST "/deposit" {body :body} (add-deposit-handler id body))))))
+                                                  (POST "/deposit" {body :body} (add-deposit-handler id body))
+                                                  (POST "/withdraw" {body :body} (add-withdraw-handler id body))
+                                                  ))))
   (route/not-found "Not Found"))
 
 (def app

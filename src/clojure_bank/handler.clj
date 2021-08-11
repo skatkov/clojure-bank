@@ -25,7 +25,6 @@
   (let [new-balance (- (:balance (@account-collection id)) amount)]
     (swap! account-collection assoc-in [id :balance] new-balance)))
 
-
 (defn missing-account-error []
   {:status 400
    :headers {"Content-Type" "text/json"}
@@ -34,7 +33,7 @@
 (defn negative-amount-error []
   {:status 400
    :headers {"Content-Type" "text/json"}
-   :body  (str (json/write-str {:error "You can only deposit a positive amount of money."}))})
+   :body  (str (json/write-str {:error "You can only use positive amount of money."}))})
 
 (defn get-account-handler [id]
   (let [account (@account-collection (Integer/parseInt id))]
@@ -44,21 +43,24 @@
   (add-deposit (Integer/parseInt id) (body "amount"))
   (get-account-handler id))
 
+(defn add-withdraw-req [id body]
+  (withdraw (Integer/parseInt id) (body "amount"))
+  (get-account-handler id))
+
 (defn add-account-handler [body]
   (response (last (vals (add-account (body "name"))))))
 
 (defn add-deposit-handler [id body]
-		(cond
-				(> 0 (body "amount")) (negative-amount-error)
-				(nil? (@account-collection (Integer/parseInt id))) (missing-account-error)
-				:else (add-deposit-resp id body)
-		)
-)
+  (cond
+    (nil? (@account-collection (Integer/parseInt id))) (missing-account-error)
+    (> 0 (body "amount")) (negative-amount-error)
+    :else (add-deposit-resp id body)))
 
 (defn add-withdraw-handler [id body]
-		(withdraw (Integer/parseInt id) (body "amount"))
-		(get-account-handler id)
-)
+  (cond
+    (nil? (@account-collection (Integer/parseInt id))) (missing-account-error)
+    (> 0 (body "amount")) (negative-amount-error)
+    :else (add-withdraw-req id body)))
 
 (defroutes app-routes
   (GET "/" [] "Hello World")
@@ -67,8 +69,7 @@
                            (context "/:id" [id] (defroutes account-routes
                                                   (GET "/" [] (get-account-handler id))
                                                   (POST "/deposit" {body :body} (add-deposit-handler id body))
-                                                  (POST "/withdraw" {body :body} (add-withdraw-handler id body))
-                                                  ))))
+                                                  (POST "/withdraw" {body :body} (add-withdraw-handler id body))))))
   (route/not-found "Not Found"))
 
 (def app

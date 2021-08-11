@@ -89,4 +89,14 @@
                             (mock/json-body {:amount -50})))]
 
       (is (= (:status response) 400))
-      (is (= (:body response) (json/write-str {:error "You can only use positive amount of money."}))))))
+      (is (= (:body response) (json/write-str {:error "You can only use positive amount of money."})))))
+
+  (testing "withdraw negative amount"
+    (let [response (app (-> (mock/request :post "/account/1/withdraw")
+                            (mock/json-body {:amount 1000})))]
+
+      (is (= (:status response) 400))
+      (is (= (:body response) (json/write-str {:error "Not enough balance"})))))
+
+
+  )

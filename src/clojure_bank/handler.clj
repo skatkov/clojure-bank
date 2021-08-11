@@ -30,6 +30,12 @@
    :headers {"Content-Type" "text/json"}
    :body  (str (json/write-str {:error "Account is missing"}))})
 
+(defn balance-error []
+  {:status 400
+   :headers {"Content-Type" "text/json"}
+   :body  (str (json/write-str {:error "Not enough balance"}))})
+
+
 (defn negative-amount-error []
   {:status 400
    :headers {"Content-Type" "text/json"}
@@ -60,6 +66,7 @@
   (cond
     (nil? (@account-collection (Integer/parseInt id))) (missing-account-error)
     (> 0 (body "amount")) (negative-amount-error)
+    (< (:balance (@account-collection (Integer/parseInt id))) (body "amount")) (balance-error)
     :else (add-withdraw-req id body)))
 
 (defroutes app-routes

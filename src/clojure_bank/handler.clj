@@ -18,10 +18,10 @@
 (defn get-account [id] (get @account-collection (Integer/parseInt id)))
 
 (defn get-account-handler [id]
-  (def account (get-account id))
-  {:status 200
-   :headers {"Content-Type" "text/json"}
-   :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))})
+  (let [account (get-account id)]
+    {:status 200
+     :headers {"Content-Type" "text/json"}
+     :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))}))
 
 (defn add-account-handler [body]
   {:status 200

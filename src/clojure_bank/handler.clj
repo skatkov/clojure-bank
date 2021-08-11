@@ -15,10 +15,8 @@
 (defn add-account [name]
   (swap! account-collection assoc (next-account-number) {:account-number (next-account-number) :name name :balance 0}))
 
-(defn get-account [id] (get @account-collection (Integer/parseInt id)))
-
 (defn get-account-handler [id]
-  (let [account (get-account id)]
+  (let [account (get @account-collection (Integer/parseInt id))]
     {:status 200
      :headers {"Content-Type" "text/json"}
      :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))}))

@@ -13,28 +13,35 @@
   (+ 1 (if (empty? @account-collection) 0 (key (last @account-collection)))))
 
 (defn add-account [name]
-  (swap! account-collection assoc (next-account-number) {:account-number (next-account-number) :name name :balance 0}))
+  (let [new-id (next-account-number)]
+    (swap! account-collection assoc new-id {:account-number new-id :name name :balance 0})))
 
-(defn get-account [id] (get @account-collection (Integer/parseInt id)))
+(defn add-deposit [id amount]
+  (let [new-balance (+ amount (:balance (@account-collection id)))]
+    (swap! account-collection assoc-in [id :balance] new-balance)))
 
 (defn get-account-handler [id]
-  (def account (get-account id))
-  {:status 200
-   :headers {"Content-Type" "text/json"}
-   :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))})
-
-(defn getparameter [req pname] (get (:params req) pname))
+  (let [account (@account-collection (Integer/parseInt id))]
+    {:status 200
+     :headers {"Content-Type" "text/json"}
+     :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))}))
 
 (defn add-account-handler [body]
   {:status 200
    :headers {"Content-Type" "text/json"}
    :body (str (json/write-str (last (vals (add-account (body "name"))))))})
 
+(defn add-deposit-handler [id body]
+  (add-deposit (Integer/parseInt id) (body "amount"))
+  (get-account-handler id))
+
 (defroutes app-routes
   (GET "/" [] "Hello World")
   (context "/account" [] (defroutes account-routes
                            (POST "/" {body :body} (add-account-handler body))
-                           (GET "/:id" [id] (get-account-handler id))))
+                           (context "/:id" [id] (defroutes account-routes
+                                                  (GET "/" [] (get-account-handler id))
+                                                  (POST "/deposit" {body :body} (add-deposit-handler id body))))))
   (route/not-found "Not Found"))
 
 (def app

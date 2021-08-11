@@ -29,9 +29,7 @@
    :body (str (json/write-str (last (vals (add-account (body "name"))))))})
 
 (defn add-deposit-handler [id body]
-  (pp/pprint (get-account id))
-  (pp/pprint body)
-
+  (swap! account-collection assoc-in [(Integer/parseInt id) :balance] (body "amount"))
   (get-account-handler id))
 
 (defroutes app-routes

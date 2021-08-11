@@ -13,12 +13,15 @@
   (+ 1 (if (empty? @account-collection) 0 (key (last @account-collection)))))
 
 (defn add-account [name]
-		(let [new-id (next-account-number)]
-				(swap! account-collection assoc new-id {:account-number new-id :name name :balance 0}))
-		)
+  (let [new-id (next-account-number)]
+    (swap! account-collection assoc new-id {:account-number new-id :name name :balance 0})))
+
+(defn add-deposit [id amount]
+  (let [new-balance (+ amount (:balance (@account-collection id)))]
+    (swap! account-collection assoc-in [id :balance] new-balance)))
 
 (defn get-account-handler [id]
-  (let [account (get @account-collection (Integer/parseInt id))]
+  (let [account (@account-collection (Integer/parseInt id))]
     {:status 200
      :headers {"Content-Type" "text/json"}
      :body  (str (json/write-str (if (nil? account) {:error "Account is missing"} account)))}))
@@ -29,7 +32,7 @@
    :body (str (json/write-str (last (vals (add-account (body "name"))))))})
 
 (defn add-deposit-handler [id body]
-  (swap! account-collection assoc-in [(Integer/parseInt id) :balance] (body "amount"))
+  (add-deposit (Integer/parseInt id) (body "amount"))
   (get-account-handler id))
 
 (defroutes app-routes

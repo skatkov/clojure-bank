@@ -52,4 +52,10 @@
                             (mock/json-body {:amount 100})))]
 
       (is (= (:status response) 200))
-      (is (= (:body response) (json/write-str {:account-number 1 :name "Mr. Black" :balance 100}))))))
+      (is (= (:body response) (json/write-str {:account-number 1 :name "Mr. Black" :balance 100}))))
+
+    (let [response (app (-> (mock/request :post "/account/1/deposit")
+                            (mock/json-body {:amount 50})))]
+
+      (is (= (:status response) 200))
+      (is (= (:body response) (json/write-str {:account-number 1 :name "Mr. Black" :balance 150}))))))

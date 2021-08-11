@@ -25,6 +25,10 @@
   (let [new-balance (- (:balance (@account-collection id)) amount)]
     (swap! account-collection assoc-in [id :balance] new-balance)))
 
+(defn enough-balance? [id amount]
+		(< (:balance (@account-collection (Integer/parseInt id))) amount)
+)
+
 (defn missing-account-error []
   {:status 400
    :headers {"Content-Type" "text/json"}
@@ -66,7 +70,7 @@
   (cond
     (nil? (@account-collection (Integer/parseInt id))) (missing-account-error)
     (> 0 (body "amount")) (negative-amount-error)
-    (< (:balance (@account-collection (Integer/parseInt id))) (body "amount")) (balance-error)
+    (enough-balance? id (body "amount")) (balance-error)
     :else (add-withdraw-req id body)))
 
 (defroutes app-routes
